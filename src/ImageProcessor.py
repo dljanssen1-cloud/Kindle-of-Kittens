@@ -4,6 +4,7 @@ import math
 import numpy as np
 
 class ImageProcessor:
+
     def to_grayscale(self, image):
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -52,3 +53,11 @@ class ImageProcessor:
 
         return coordinate_x, coordinate_y
 
+
+
+     
+    def to_grayscale(self, image):
+        return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    def apply_blur(self, image):
+        return cv2.GaussianBlur(image, (9, 9), 2)

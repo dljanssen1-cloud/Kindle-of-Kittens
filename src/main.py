@@ -1,36 +1,61 @@
+import cv2
 from ImageLoader import ImageLoader
 from ImageProcessor import ImageProcessor
-import cv2
-import numpy as np
 
 def main():
     loader = ImageLoader("../ivp-2026/train/train")
     images = loader.load_images()
+
     processor = ImageProcessor()
 
-    for filename, image in images:
+   
+#load five images:
+    for filename, image in images[:5]:
         print(f"Loaded {filename}")
+
         gray = processor.to_grayscale(image)
-        edge = processor.edge_detection(gray)
+
+        #Apply Gaussian blur 
+        blurred = processor.apply_blur(gray)
+
+        #edge detection 
+        edge = processor.edge_detection(blurred)
+
+        #find the clock contour
         contour = processor.find_clock_contour(edge)
 
-        contour_output = image.copy()
+        #keep the original colour image for display 
+        display = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)
 
         if contour is not None:
-            cv2.drawContours(contour_output, [contour], -1, (0, 255, 0), 3) #draw shape around contour
+            cv2.drawContours(display, [contour], -1, (0, 255, 0), 3) #draw shape around contour
+            
             center = processor.centerclock_detection(contour)
 
             if center is not None:
                 print("Contour center:", center)
-                cv2.circle(contour_output, center, 5, (0, 0, 255), -1)
+
+                cv2.circle(display, center, 5, (0, 0, 255), -1)
+
+            else: 
+                print("No clock detected!")
 
 
-        cv2.imshow("Contour detection + center", contour_output)
-        cv2.imshow("Edge detection", edge)
+        # Resize only for display
+        height, width = display.shape[:2]
+        scale = min(1000 / width, 700 / height)
 
-        key = cv2.waitKey(0) #press key to get next image set
-        if key == ord("q"):  #press q to quit
-            break
+        display = cv2.resize(
+            display, None, fx=scale, fy=scale
+        )
+
+        cv2.imshow("Processed Clock Image", display)
+
+        key = cv2.waitKey(0)
+
+        if key == ord("q"):
+            break 
+
 
     cv2.destroyAllWindows()
 
@@ -39,4 +64,4 @@ def main():
     print(f"Successfully loaded {len(images)} images.")
 
 if __name__ == "__main__":
-    main()
+    main()  
