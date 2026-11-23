@@ -1,7 +1,6 @@
 #Add all the preprocessing steps here, such as gray-scaling, normalization, blurring, etc.
 import cv2
 import math
-import numpy as np
 
 class ImageProcessor:
 
@@ -16,12 +15,20 @@ class ImageProcessor:
         return closed
 
     def find_clock_contour(self, edges):
-        contours, hierarchy = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE) #find all contours in the image
+        contours, _ = cv2.findContours(
+            edges,
+            cv2.RETR_LIST, 
+            cv2.CHAIN_APPROX_SIMPLE
+         ) #find all contours in the image
+         
 
         best_contour = None
         largest_diameter = 0
+        
 
         for contour in contours:
+
+            
             area = cv2.contourArea(contour)
             perimeter = cv2.arcLength(contour, True)
 
@@ -52,12 +59,6 @@ class ImageProcessor:
         coordinate_y = int(moments["m01"] / moments["m00"])
 
         return coordinate_x, coordinate_y
-
-
-
-     
-    def to_grayscale(self, image):
-        return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
+    
     def apply_blur(self, image):
         return cv2.GaussianBlur(image, (9, 9), 2)
