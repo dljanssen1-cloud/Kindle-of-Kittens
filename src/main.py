@@ -2,6 +2,7 @@ import cv2
 from ImageLoader import ImageLoader
 from ImageProcessor import ImageProcessor
 from clock_detection import ClockDetection 
+from HandDetection import HandDetection
 
 def main():
     loader = ImageLoader("../ivp-2026/train/train")
@@ -9,6 +10,7 @@ def main():
 
     processor = ImageProcessor()
     detector = ClockDetection()
+    hand_detector = HandDetection()
 
    
 #load five images:
@@ -25,7 +27,8 @@ def main():
 
         candidates = detector.detect_candidates(blurred)
 
-        display = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert edge image to BGR for display
+        #display = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)  # Convert edge image to BGR for display
+        display = image.copy()  # I use the original image see if the detected lines are correct
         clock_found = False 
         
         #keep the original colour image for display 
@@ -38,6 +41,27 @@ def main():
             cv2.circle(display, (x, y), 5, (0, 0, 255), -1)
             print(f"Hough Cicrle detected at center: ({x}, {y}), radius: {radius}")
             clock_found = True
+
+            # Detect candidate lines
+            hand_edges = hand_detector.preprocess_hands(gray)
+            # Remove edges outside the clock face
+            masked_edges = hand_detector.mask_clock(hand_edges, x, y, radius)
+            
+            lines = hand_detector.detect_candidate_lines(masked_edges, radius)
+
+            print(f"Detected {len(lines)} candidate lines")
+
+            # Filter unwanted lines
+            filtered_lines = hand_detector.filter_unwanted_lines(
+                lines, x, y, radius
+            )
+
+            print(f"Remaining {len(filtered_lines)} filtered lines")
+
+            # Draw all detected candidate lines
+            for x1, y1, x2, y2 in filtered_lines:
+                cv2.line(display, (x1, y1), (x2, y2), (255, 0, 0), 2)
+
         else:
             #fallback to contour detection with strict size filtering 
             contour = processor.find_clock_contour(edge)
