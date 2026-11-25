@@ -1,4 +1,5 @@
 import cv2
+import math
 from ImageLoader import ImageLoader
 from ImageProcessor import ImageProcessor
 from clock_detection import ClockDetection 
@@ -14,8 +15,11 @@ def main():
 
    
 #load five images:
-    for filename, image in images[:5]:
+    for filename, image in images[:20]:
         print(f"Loaded {filename}")
+        
+        # Resize the image before processing
+        image = processor.resize_image(image)
 
         gray = processor.to_grayscale(image)
 
@@ -58,8 +62,24 @@ def main():
 
             print(f"Remaining {len(filtered_lines)} filtered lines")
 
+            # Merge similar lines
+            merged_lines = hand_detector.merge_similar_lines(
+                filtered_lines, x, y
+            )
+
+            print(f"Remaining {len(merged_lines)} merged lines")
+            for line in merged_lines:
+
+                x1, y1, x2, y2 = line
+
+                angle = hand_detector.calculate_angle(line, x, y)
+
+                length = math.hypot(x2 - x1, y2 - y1)
+
+                print(f"Angle: {angle:.2f}°, Length: {length:.2f} px")
+
             # Draw all detected candidate lines
-            for x1, y1, x2, y2 in filtered_lines:
+            for x1, y1, x2, y2 in merged_lines:
                 cv2.line(display, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
         else:

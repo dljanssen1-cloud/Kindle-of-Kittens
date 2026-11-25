@@ -4,6 +4,26 @@ import math
 
 class ImageProcessor:
 
+    def resize_image(self, image, max_dimension=1200):
+
+      height, width = image.shape[:2]
+
+      # Calculate the scaling factor
+      scale = min(1.0, max_dimension / max(height, width))
+
+      # Calculate the new dimensions
+      new_width = int(width * scale)
+      new_height = int(height * scale)
+
+      # Resize the image
+      resized = cv2.resize(
+         image,
+         (new_width, new_height),
+         interpolation=cv2.INTER_AREA
+      )
+
+      return resized
+   
     def to_grayscale(self, image):
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
