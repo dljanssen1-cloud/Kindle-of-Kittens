@@ -4,6 +4,7 @@ from ImageLoader import ImageLoader
 from ImageProcessor import ImageProcessor
 from clock_detection import ClockDetection 
 from HandDetection import HandDetection
+from time_reader import TimeReader
 
 def main():
     loader = ImageLoader("../ivp-2026/train/train")
@@ -12,6 +13,7 @@ def main():
     processor = ImageProcessor()
     detector = ClockDetection()
     hand_detector = HandDetection()
+    time_reader = TimeReader()
 
    
 #load five images:
@@ -81,6 +83,15 @@ def main():
             # Draw all detected candidate lines
             for x1, y1, x2, y2 in merged_lines:
                 cv2.line(display, (x1, y1), (x2, y2), (255, 0, 0), 2)
+
+            #calculate angles + time on hand edges
+            hands = time_reader.pick_hands(filtered_lines, x, y)
+            if hands is not None:
+                hour_angle, minute_angle = hands
+                hour, minute = time_reader.angles_to_time(hour_angle, minute_angle)
+                print(f"Time: {hour:02d}:{minute:02d}")
+            else:
+                print("no time found")
 
         else:
             #fallback to contour detection with strict size filtering 
