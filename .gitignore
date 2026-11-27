@@ -3,7 +3,8 @@
 __pycache__/
 *.py[codz]
 *$py.class
-
+# Ignore generated CSV files inside src
+/src/*.csv
 # C extensions
 *.so
 
